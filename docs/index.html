@@ -47,6 +47,10 @@
             <span class="label">Zivoty</span>
             <span id="lives" class="value">3</span>
           </div>
+          <div class="stat">
+            <span class="label">Combo</span>
+            <span id="combo" class="value">x1</span>
+          </div>
           <button id="startBtn" class="start" type="button">Start</button>
           <button id="stopBtn" class="ghost" type="button">Stop</button>
         </div>
@@ -88,16 +92,32 @@
       <div class="hammer-handle"></div>
     </div>
 
-    <div id="gate" class="overlay" role="dialog" aria-modal="true">
+    <div id="auth" class="overlay hidden" role="dialog" aria-modal="true">
       <div class="overlay-card">
-        <h2>Vstup</h2>
-        <p>Zadej tajne heslo pro start hry.</p>
-        <input id="gateInput" class="gate-input" type="password" placeholder="tajne heslo" />
-        <input id="nickInput" class="gate-input" type="text" placeholder="nickname" maxlength="16" />
+        <p class="kicker">Vstup</p>
+        <h2 id="authTitle">Registrace</h2>
+        <p id="authDesc">Zaregistruj se a vyber si jedinecny nickname.</p>
+        <input id="authEmail" class="gate-input" type="email" placeholder="email" autocomplete="email" />
+        <input
+          id="authPassword"
+          class="gate-input"
+          type="password"
+          placeholder="heslo (min. 8 znaku)"
+          autocomplete="current-password"
+        />
+        <input
+          id="authNickname"
+          class="gate-input"
+          type="text"
+          placeholder="nickname"
+          maxlength="16"
+          autocomplete="nickname"
+        />
         <div class="overlay-actions">
-          <button id="gateBtn" class="start" type="button">Odemknout</button>
+          <button id="authBtn" class="start" type="button">Registrovat</button>
+          <button id="authSwitch" class="ghost" type="button">Mam ucet</button>
         </div>
-        <p id="gateError" class="gate-error hidden">Spatne heslo.</p>
+        <p id="authError" class="gate-error hidden">Nepodarilo se pokracovat.</p>
       </div>
     </div>
 

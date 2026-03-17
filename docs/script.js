@@ -13,11 +13,15 @@ const gameTitleEl = document.getElementById("gameTitle");
 const gameSubtitleEl = document.getElementById("gameSubtitle");
 const leaderSubtitleEl = document.getElementById("leaderSubtitle");
 const gameTiles = Array.from(document.querySelectorAll(".game-tile"));
-const gateEl = document.getElementById("gate");
-const gateInput = document.getElementById("gateInput");
-const nickInput = document.getElementById("nickInput");
-const gateBtn = document.getElementById("gateBtn");
-const gateError = document.getElementById("gateError");
+const authEl = document.getElementById("auth");
+const authTitle = document.getElementById("authTitle");
+const authDesc = document.getElementById("authDesc");
+const authEmail = document.getElementById("authEmail");
+const authPassword = document.getElementById("authPassword");
+const authNickname = document.getElementById("authNickname");
+const authBtn = document.getElementById("authBtn");
+const authSwitch = document.getElementById("authSwitch");
+const authError = document.getElementById("authError");
 const leaderList = document.getElementById("leaderList");
 const headSrc = "assets/head.png";
 const activeHeads = new Map();
@@ -32,7 +36,11 @@ let countdownTimer = null;
 let activeHoles = [];
 let gameOver = false;
 let unlocked = false;
+let authMode = "register";
 let nickname = "";
+let email = "";
+let comboStreak = 0;
+let comboLevel = 0;
 let currentGame = null;
 
 const GAMES = {
@@ -49,6 +57,9 @@ const SUPABASE_ANON_KEY =
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const SESSION_KEY = "zajac_session";
 const SESSION_TTL = 60 * 60 * 1000;
+
+const COMBO_STEP = 4;
+const COMBO_MAX_LEVEL = 4;
 
 function randomTime(min, max) {
   return Math.round(Math.random() * (max - min) + min);
@@ -90,7 +101,7 @@ function spawnInHole(hole, lifeTime) {
       if (hole.dataset.hit === "1") return;
       hole.dataset.hit = "1";
       hole.classList.add("bonked");
-      updateScore(1);
+      applyHitScore();
       removeHead(hole, true);
       event.preventDefault();
     },
@@ -113,6 +124,7 @@ function removeHead(hole, wasHitOverride) {
   activeHeads.delete(hole);
   if (!wasHit && !timeUp) {
     updateLives(-1);
+    resetCombo();
   }
 }
 
@@ -138,6 +150,31 @@ function showMole() {
 function updateScore(value) {
   score += value;
   scoreEl.textContent = score;
+}
+
+function updateComboUI() {
+  const comboEl = document.getElementById("combo");
+  if (!comboEl) return;
+  if (comboStreak <= 0) {
+    comboEl.textContent = "x1";
+    return;
+  }
+  comboEl.textContent = `x${(1 + comboLevel * 0.25).toFixed(2)}`;
+}
+
+function applyHitScore() {
+  comboStreak += 1;
+  comboLevel = Math.min(Math.floor(comboStreak / COMBO_STEP), COMBO_MAX_LEVEL);
+  const multiplier = 1 + comboLevel * 0.25;
+  const points = 1 + Math.floor((multiplier - 1) * 2 + 0.0001);
+  updateScore(points);
+  updateComboUI();
+}
+
+function resetCombo() {
+  comboStreak = 0;
+  comboLevel = 0;
+  updateComboUI();
 }
 
 function updateLives(value) {
@@ -172,6 +209,7 @@ function startGame() {
   score = 0;
   timeLeft = 30;
   livesLeft = 3;
+  resetCombo();
   scoreEl.textContent = score;
   timeEl.textContent = timeLeft;
   livesEl.textContent = livesLeft;
@@ -200,6 +238,7 @@ function finishGame(showLose) {
   });
   activeHeads.clear();
   activeHoles = [];
+  resetCombo();
   if (currentGame) {
     submitScore();
     loadLeaderboard();
@@ -216,14 +255,6 @@ quitBtn.addEventListener("click", () => {
   window.location.href = "https://www.youtube.com/watch?v=djFhsBAUdJ0";
 });
 
-function showGateIfNeeded() {
-  if (unlocked) {
-    gateEl.classList.add("hidden");
-    return;
-  }
-  gateEl.classList.remove("hidden");
-}
-
 function selectGame(gameId) {
   const config = GAMES[gameId];
   if (!config) return;
@@ -232,41 +263,129 @@ function selectGame(gameId) {
   gameSubtitleEl.textContent = config.subtitle;
   leaderSubtitleEl.textContent = `Top skore hracu: ${config.leaderboardLabel}`;
   menuEl.classList.add("hidden");
-  showGateIfNeeded();
+  showAuthIfNeeded();
   loadLeaderboard();
 }
 
-function tryUnlock() {
-  const value = gateInput.value.trim();
-  const nickValue = nickInput.value.trim();
-  if (value === "zajacjekral") {
-    unlocked = true;
-    nickname = nickValue.length >= 3 ? nickValue : `Hrac${Math.floor(Math.random() * 900 + 100)}`;
-    const session = {
-      nickname,
-      expiresAt: Date.now() + SESSION_TTL,
-    };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    gateEl.classList.add("hidden");
-    gateError.classList.add("hidden");
-    gateInput.value = "";
-    nickInput.value = "";
-  } else {
-    gateError.classList.remove("hidden");
+function showAuthIfNeeded() {
+  if (unlocked) {
+    authEl.classList.add("hidden");
+    return;
   }
+  authEl.classList.remove("hidden");
 }
 
-gateBtn.addEventListener("click", tryUnlock);
-gateInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    tryUnlock();
+function setAuthMode(mode) {
+  authMode = mode;
+  if (authMode === "login") {
+    authTitle.textContent = "Prihlaseni";
+    authDesc.textContent = "Pokracuj se svym uctem.";
+    authNickname.classList.add("hidden");
+    authBtn.textContent = "Prihlasit";
+    authSwitch.textContent = "Nemam ucet";
+  } else {
+    authTitle.textContent = "Registrace";
+    authDesc.textContent = "Zaregistruj se a vyber si jedinecny nickname.";
+    authNickname.classList.remove("hidden");
+    authBtn.textContent = "Registrovat";
+    authSwitch.textContent = "Mam ucet";
+  }
+  authError.classList.add("hidden");
+}
+
+async function hashPassword(value) {
+  const data = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function registerUser() {
+  const emailValue = authEmail.value.trim().toLowerCase();
+  const passwordValue = authPassword.value.trim();
+  const nicknameValue = authNickname.value.trim();
+  if (!emailValue || !passwordValue || passwordValue.length < 8 || nicknameValue.length < 3) {
+    authError.textContent = "Zadej email, heslo (min. 8 znaku) a nickname (min. 3 znaky).";
+    authError.classList.remove("hidden");
+    return;
+  }
+  const passwordHash = await hashPassword(passwordValue);
+  const { error } = await supabaseClient.from("players").insert([
+    {
+      email: emailValue,
+      nickname: nicknameValue,
+      password_hash: passwordHash,
+      created_at: new Date().toISOString(),
+    },
+  ]);
+  if (error) {
+    authError.textContent = "Email nebo nickname je uz obsazeny.";
+    authError.classList.remove("hidden");
+    return;
+  }
+  unlocked = true;
+  nickname = nicknameValue;
+  email = emailValue;
+  const session = {
+    nickname,
+    email,
+    expiresAt: Date.now() + SESSION_TTL,
+  };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  authEl.classList.add("hidden");
+  authEmail.value = "";
+  authPassword.value = "";
+  authNickname.value = "";
+}
+
+async function loginUser() {
+  const emailValue = authEmail.value.trim().toLowerCase();
+  const passwordValue = authPassword.value.trim();
+  if (!emailValue || !passwordValue) {
+    authError.textContent = "Zadej email a heslo.";
+    authError.classList.remove("hidden");
+    return;
+  }
+  const passwordHash = await hashPassword(passwordValue);
+  const { data, error } = await supabaseClient
+    .from("players")
+    .select("nickname, password_hash")
+    .eq("email", emailValue)
+    .maybeSingle();
+  if (error || !data) {
+    authError.textContent = "Ucet neexistuje.";
+    authError.classList.remove("hidden");
+    return;
+  }
+  if (data.password_hash !== passwordHash) {
+    authError.textContent = "Spatne heslo.";
+    authError.classList.remove("hidden");
+    return;
+  }
+  unlocked = true;
+  nickname = data.nickname;
+  email = emailValue;
+  const session = {
+    nickname,
+    email,
+    expiresAt: Date.now() + SESSION_TTL,
+  };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  authEl.classList.add("hidden");
+  authPassword.value = "";
+}
+
+authBtn.addEventListener("click", () => {
+  if (authMode === "login") {
+    loginUser();
+  } else {
+    registerUser();
   }
 });
 
-nickInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    tryUnlock();
-  }
+authSwitch.addEventListener("click", () => {
+  setAuthMode(authMode === "login" ? "register" : "login");
 });
 
 async function loadLeaderboard() {
@@ -341,12 +460,11 @@ function restoreSession() {
   if (!raw) return;
   try {
     const session = JSON.parse(raw);
-    if (session.expiresAt && session.expiresAt > Date.now() && session.nickname) {
+    if (session.expiresAt && session.expiresAt > Date.now() && session.nickname && session.email) {
       unlocked = true;
       nickname = session.nickname;
-      if (currentGame) {
-        gateEl.classList.add("hidden");
-      }
+      email = session.email;
+      if (currentGame) authEl.classList.add("hidden");
       return;
     }
   } catch {
@@ -358,7 +476,8 @@ function restoreSession() {
 resetBoard();
 loadLeaderboard();
 restoreSession();
-gateEl.classList.add("hidden");
+setAuthMode("register");
+authEl.classList.add("hidden");
 gameTiles.forEach((tile) => {
   tile.addEventListener("click", () => {
     selectGame(tile.dataset.game);
