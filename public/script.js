@@ -476,7 +476,7 @@ function restoreSession() {
 resetBoard();
 loadLeaderboard();
 restoreSession();
-setAuthMode("register");
+setAuthMode("login");
 authEl.classList.add("hidden");
 gameTiles.forEach((tile) => {
   tile.addEventListener("click", () => {
