@@ -46,7 +46,7 @@ let currentGame = null;
 const GAMES = {
   bonk: {
     title: "Bonk",
-    subtitle: "Mlat kladivem, tref hlavu a udrz si tempo.",
+    subtitle: "Mlať kladivem, tref hlavu a udrž si tempo.",
     leaderboardLabel: "Bonk",
   },
 };
@@ -261,7 +261,7 @@ function selectGame(gameId) {
   currentGame = gameId;
   gameTitleEl.textContent = config.title;
   gameSubtitleEl.textContent = config.subtitle;
-  leaderSubtitleEl.textContent = `Top skore hracu: ${config.leaderboardLabel}`;
+  leaderSubtitleEl.textContent = `Top skóre hráčů: ${config.leaderboardLabel}`;
   menuEl.classList.add("hidden");
   showAuthIfNeeded();
   loadLeaderboard();
@@ -278,17 +278,17 @@ function showAuthIfNeeded() {
 function setAuthMode(mode) {
   authMode = mode;
   if (authMode === "login") {
-    authTitle.textContent = "Prihlaseni";
-    authDesc.textContent = "Pokracuj se svym uctem.";
+    authTitle.textContent = "Přihlášení";
+    authDesc.textContent = "Pokračuj se svým účtem.";
     authNickname.classList.add("hidden");
-    authBtn.textContent = "Prihlasit";
-    authSwitch.textContent = "Nemam ucet";
+    authBtn.textContent = "Přihlásit";
+    authSwitch.textContent = "Nemám účet";
   } else {
     authTitle.textContent = "Registrace";
-    authDesc.textContent = "Zaregistruj se a vyber si jedinecny nickname.";
+    authDesc.textContent = "Zaregistruj se a vyber si jedinečný nickname.";
     authNickname.classList.remove("hidden");
     authBtn.textContent = "Registrovat";
-    authSwitch.textContent = "Mam ucet";
+    authSwitch.textContent = "Mám účet";
   }
   authError.classList.add("hidden");
 }
@@ -306,7 +306,7 @@ async function registerUser() {
   const passwordValue = authPassword.value.trim();
   const nicknameValue = authNickname.value.trim();
   if (!emailValue || !passwordValue || passwordValue.length < 8 || nicknameValue.length < 3) {
-    authError.textContent = "Zadej email, heslo (min. 8 znaku) a nickname (min. 3 znaky).";
+    authError.textContent = "Zadej e-mail, heslo (min. 8 znaků) a nickname (min. 3 znaky).";
     authError.classList.remove("hidden");
     return;
   }
@@ -320,7 +320,7 @@ async function registerUser() {
     },
   ]);
   if (error) {
-    authError.textContent = "Email nebo nickname je uz obsazeny.";
+    authError.textContent = "E-mail nebo nickname je už obsazený.";
     authError.classList.remove("hidden");
     return;
   }
@@ -343,7 +343,7 @@ async function loginUser() {
   const emailValue = authEmail.value.trim().toLowerCase();
   const passwordValue = authPassword.value.trim();
   if (!emailValue || !passwordValue) {
-    authError.textContent = "Zadej email a heslo.";
+    authError.textContent = "Zadej e-mail a heslo.";
     authError.classList.remove("hidden");
     return;
   }
@@ -354,12 +354,12 @@ async function loginUser() {
     .eq("email", emailValue)
     .maybeSingle();
   if (error || !data) {
-    authError.textContent = "Ucet neexistuje.";
+    authError.textContent = "Účet neexistuje.";
     authError.classList.remove("hidden");
     return;
   }
   if (data.password_hash !== passwordHash) {
-    authError.textContent = "Spatne heslo.";
+    authError.textContent = "Špatné heslo.";
     authError.classList.remove("hidden");
     return;
   }
@@ -391,7 +391,7 @@ authSwitch.addEventListener("click", () => {
 async function loadLeaderboard() {
   if (!leaderList) return;
   if (!currentGame) {
-    leaderList.innerHTML = "<li>Nejdrive vyber hru.</li>";
+    leaderList.innerHTML = "<li>Nejdřív vyber hru.</li>";
     return;
   }
   const { data, error } = await supabaseClient
@@ -402,12 +402,12 @@ async function loadLeaderboard() {
     .limit(10);
 
   if (error) {
-    leaderList.innerHTML = "<li>Nepodarilo se nacist leaderboard.</li>";
+    leaderList.innerHTML = "<li>Nepodařilo se načíst žebříček.</li>";
     return;
   }
 
   if (!data || data.length === 0) {
-    leaderList.innerHTML = "<li>Zatim bez skore.</li>";
+    leaderList.innerHTML = "<li>Zatím bez skóre.</li>";
     return;
   }
 
