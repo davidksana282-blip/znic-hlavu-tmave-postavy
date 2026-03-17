@@ -1,0 +1,105 @@
+﻿<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arcade Krtkovacka</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bungee&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+    <main class="game">
+      <header class="hud">
+        <div>
+          <p class="kicker">Arcade</p>
+          <h1>Krtkovacka: Zajac GNG</h1>
+          <p class="sub">Mlat kladivem, tref hlavu a udrz si tempo.</p>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <span class="label">Skore</span>
+            <span id="score" class="value">0</span>
+          </div>
+          <div class="stat">
+            <span class="label">Cas</span>
+            <span id="time" class="value">30</span>
+          </div>
+          <div class="stat">
+            <span class="label">Zivoty</span>
+            <span id="lives" class="value">3</span>
+          </div>
+          <button id="startBtn" class="start" type="button">Start</button>
+          <button id="stopBtn" class="ghost" type="button">Stop</button>
+        </div>
+      </header>
+
+      <section class="board" aria-label="Herni plocha">
+        <div class="row">
+          <div class="hole"></div>
+          <div class="hole"></div>
+          <div class="hole"></div>
+        </div>
+        <div class="row">
+          <div class="hole"></div>
+          <div class="hole"></div>
+          <div class="hole"></div>
+        </div>
+        <div class="row">
+          <div class="hole"></div>
+          <div class="hole"></div>
+          <div class="hole"></div>
+        </div>
+      </section>
+
+      <div class="hint">
+        Klavesnice: <span>mezernik = start</span>. Mys: klikni na hlavu.
+      </div>
+
+      <section class="leaderboard">
+        <div class="leaderboard-header">
+          <h3>Leaderboard</h3>
+          <p>Top skore hracu</p>
+        </div>
+        <ol id="leaderList" class="leader-list"></ol>
+      </section>
+    </main>
+
+    <div id="hammer" class="hammer" aria-hidden="true">
+      <div class="hammer-head"><span>Zajac gng</span></div>
+      <div class="hammer-handle"></div>
+    </div>
+
+    <div id="gate" class="overlay" role="dialog" aria-modal="true">
+      <div class="overlay-card">
+        <h2>Vstup</h2>
+        <p>Zadej tajne heslo pro start hry.</p>
+        <input id="gateInput" class="gate-input" type="password" placeholder="tajne heslo" />
+        <input id="nickInput" class="gate-input" type="text" placeholder="nickname" maxlength="16" />
+        <div class="overlay-actions">
+          <button id="gateBtn" class="start" type="button">Odemknout</button>
+        </div>
+        <p id="gateError" class="gate-error hidden">Spatne heslo.</p>
+      </div>
+    </div>
+
+    <div id="gameOver" class="overlay hidden" role="dialog" aria-modal="true">
+      <div class="overlay-card">
+        <h2>Prohra</h2>
+        <p>Nestihl jsi trefit hlavu. Chces to zkusit znovu?</p>
+        <div class="overlay-actions">
+          <button id="retryBtn" class="start" type="button">Opakovat hru</button>
+          <button id="quitBtn" class="ghost" type="button">Vypnout hru</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
