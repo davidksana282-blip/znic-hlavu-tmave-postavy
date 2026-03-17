@@ -5,7 +5,8 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "test": "node scripts/smoke.js"
+    "test": "node scripts/smoke.js",
+    "sync-docs": "node scripts/sync-docs.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
