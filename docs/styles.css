@@ -315,6 +315,45 @@ h1 {
   max-width: 360px;
 }
 
+.menu-card {
+  max-width: 520px;
+}
+
+.menu-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.game-tile {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(140deg, rgba(255, 184, 28, 0.15), rgba(255, 78, 136, 0.08));
+  padding: 18px 20px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink);
+  display: grid;
+  gap: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.game-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 184, 28, 0.4);
+}
+
+.game-title {
+  font-family: "Bungee", cursive;
+  font-size: 20px;
+}
+
+.game-meta {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
 .overlay-card h2 {
   margin: 0 0 8px;
   font-family: "Bungee", cursive;

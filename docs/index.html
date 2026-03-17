@@ -14,12 +14,25 @@
   </head>
   <body>
     <div class="bg-grid"></div>
+    <div id="menu" class="overlay" role="dialog" aria-modal="true">
+      <div class="overlay-card menu-card">
+        <p class="kicker">Arcade menu</p>
+        <h2>Vyber hru</h2>
+        <p>Zatim mame jednu hru. Dalsi pribudou pozdeji.</p>
+        <div class="menu-grid">
+          <button class="game-tile" type="button" data-game="bonk">
+            <span class="game-title">Bonk</span>
+            <span class="game-meta">Mlat kladivem, tref hlavu a udrz si tempo.</span>
+          </button>
+        </div>
+      </div>
+    </div>
     <main class="game">
       <header class="hud">
         <div>
           <p class="kicker">Arcade</p>
-          <h1>Krtkovacka: Zajac GNG</h1>
-          <p class="sub">Mlat kladivem, tref hlavu a udrz si tempo.</p>
+          <h1 id="gameTitle">Bonk</h1>
+          <p id="gameSubtitle" class="sub">Mlat kladivem, tref hlavu a udrz si tempo.</p>
         </div>
         <div class="stats">
           <div class="stat">
@@ -64,7 +77,7 @@
       <section class="leaderboard">
         <div class="leaderboard-header">
           <h3>Leaderboard</h3>
-          <p>Top skore hracu</p>
+          <p id="leaderSubtitle">Top skore hracu</p>
         </div>
         <ol id="leaderList" class="leader-list"></ol>
       </section>

@@ -8,6 +8,11 @@ const hammer = document.getElementById("hammer");
 const gameOverEl = document.getElementById("gameOver");
 const retryBtn = document.getElementById("retryBtn");
 const quitBtn = document.getElementById("quitBtn");
+const menuEl = document.getElementById("menu");
+const gameTitleEl = document.getElementById("gameTitle");
+const gameSubtitleEl = document.getElementById("gameSubtitle");
+const leaderSubtitleEl = document.getElementById("leaderSubtitle");
+const gameTiles = Array.from(document.querySelectorAll(".game-tile"));
 const gateEl = document.getElementById("gate");
 const gateInput = document.getElementById("gateInput");
 const nickInput = document.getElementById("nickInput");
@@ -28,6 +33,15 @@ let activeHoles = [];
 let gameOver = false;
 let unlocked = false;
 let nickname = "";
+let currentGame = null;
+
+const GAMES = {
+  bonk: {
+    title: "Bonk",
+    subtitle: "Mlat kladivem, tref hlavu a udrz si tempo.",
+    leaderboardLabel: "Bonk",
+  },
+};
 
 const SUPABASE_URL = "https://akjtbrqnnsqmhzudrtbz.supabase.co";
 const SUPABASE_ANON_KEY =
@@ -147,6 +161,10 @@ function resetBoard() {
 
 function startGame() {
   if (!unlocked) return;
+  if (!currentGame) {
+    menuEl.classList.remove("hidden");
+    return;
+  }
   clearTimeout(popTimer);
   clearInterval(countdownTimer);
   timeUp = false;
@@ -182,8 +200,10 @@ function finishGame(showLose) {
   });
   activeHeads.clear();
   activeHoles = [];
-  submitScore();
-  loadLeaderboard();
+  if (currentGame) {
+    submitScore();
+    loadLeaderboard();
+  }
   if (showLose) {
     gameOver = true;
     gameOverEl.classList.remove("hidden");
@@ -195,6 +215,26 @@ retryBtn.addEventListener("click", startGame);
 quitBtn.addEventListener("click", () => {
   window.location.href = "https://www.youtube.com/watch?v=djFhsBAUdJ0";
 });
+
+function showGateIfNeeded() {
+  if (unlocked) {
+    gateEl.classList.add("hidden");
+    return;
+  }
+  gateEl.classList.remove("hidden");
+}
+
+function selectGame(gameId) {
+  const config = GAMES[gameId];
+  if (!config) return;
+  currentGame = gameId;
+  gameTitleEl.textContent = config.title;
+  gameSubtitleEl.textContent = config.subtitle;
+  leaderSubtitleEl.textContent = `Top skore hracu: ${config.leaderboardLabel}`;
+  menuEl.classList.add("hidden");
+  showGateIfNeeded();
+  loadLeaderboard();
+}
 
 function tryUnlock() {
   const value = gateInput.value.trim();
@@ -231,9 +271,14 @@ nickInput.addEventListener("keydown", (event) => {
 
 async function loadLeaderboard() {
   if (!leaderList) return;
+  if (!currentGame) {
+    leaderList.innerHTML = "<li>Nejdrive vyber hru.</li>";
+    return;
+  }
   const { data, error } = await supabaseClient
     .from("leaderboard")
     .select("nickname, score")
+    .eq("game", currentGame)
     .order("score", { ascending: false })
     .limit(10);
 
@@ -256,18 +301,19 @@ async function loadLeaderboard() {
 }
 
 async function submitScore() {
-  if (!nickname || score <= 0) return;
+  if (!nickname || score <= 0 || !currentGame) return;
   const { data } = await supabaseClient
     .from("leaderboard")
     .select("score")
     .eq("nickname", nickname)
+    .eq("game", currentGame)
     .limit(1)
     .maybeSingle();
 
   if (data && data.score >= score) return;
   await supabaseClient
     .from("leaderboard")
-    .upsert([{ nickname, score }], { onConflict: "nickname" });
+    .upsert([{ nickname, score, game: currentGame }], { onConflict: "nickname,game" });
 }
 
 window.addEventListener("keydown", (event) => {
@@ -298,7 +344,9 @@ function restoreSession() {
     if (session.expiresAt && session.expiresAt > Date.now() && session.nickname) {
       unlocked = true;
       nickname = session.nickname;
-      gateEl.classList.add("hidden");
+      if (currentGame) {
+        gateEl.classList.add("hidden");
+      }
       return;
     }
   } catch {
@@ -310,3 +358,9 @@ function restoreSession() {
 resetBoard();
 loadLeaderboard();
 restoreSession();
+gateEl.classList.add("hidden");
+gameTiles.forEach((tile) => {
+  tile.addEventListener("click", () => {
+    selectGame(tile.dataset.game);
+  });
+});
